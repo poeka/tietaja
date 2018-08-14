@@ -2,7 +2,15 @@
 <html>
    <body>
    
-      <h1>Tuomas on {{ name }}!</h1>
-      
+      <h1>Tervetuloa! Kerro nimesi</h1>
+
+      <form action="/handle_data/" method="post">
+        Etunimi:<br>
+        <input type="text" name="firstname"><br>
+        Sukunimi:<br>
+        <input type="text" name="lastname"><br>
+        <input type="submit" value="Submit">
+      </form>
+
    </body>
 </html>
