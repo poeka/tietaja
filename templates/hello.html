@@ -1,16 +1,25 @@
 <!doctype html>
 <html>
-   <body>
-   
-      <h1>Tervetuloa! Kerro nimesi</h1>
 
-      <form action="/handle_data/" method="post">
-        Etunimi:<br>
-        <input type="text" name="firstname"><br>
-        Sukunimi:<br>
-        <input type="text" name="lastname"><br>
-        <input type="submit" value="Submit">
-      </form>
+<body>
 
-   </body>
+  <h1>Hello!</h1>
+
+  <form action="/register/" method="post">
+    Username:
+    <br>
+    <input type="text" name="username">
+    <br> Enter your password:
+    <br>
+    <input type="password" name="password1">
+    <br> Re-enter your password:
+    <br>
+    <input type="password" name="password2">
+    <br>
+    <input type="submit" value="Submit">
+    <br>
+  </form>
+
+</body>
+
 </html>
