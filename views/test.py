@@ -4,6 +4,10 @@ from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
 
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from tietaja.database.db import get_db
+
 bp = Blueprint('test', __name__, template_folder='templates')
 
 
@@ -11,17 +15,31 @@ bp = Blueprint('test', __name__, template_folder='templates')
 def hello():
     return render_template('hello.html')
 
-@bp.route('/handle_data/', methods=('GET', 'POST'))
-def handle_data():
-    first_name = request.form['firstname']
-    last_name = request.form['lastname']
 
-    return redirect(url_for('.show_hello', firstname=first_name, lastname=last_name))
+@bp.route('/register/', methods=('GET', 'POST'))
+def handle_data():
+    username = request.form['username']
+    password1 = request.form['password1']
+    password2 = request.form['password2']
+
+    if password1 != password2:
+        return redirect(url_for('.hello'))
+
+    db = get_db()
+
+    db.execute(
+        'INSERT INTO user (username, password) VALUES (?, ?)',
+        (username, generate_password_hash(password1))
+    )
+
+    db.commit()
+
+    return redirect(url_for('.show_hello', username=username))
+
 
 @bp.route('/show_hello/', methods=('GET', 'POST'))
 def show_hello():
-    
-    first_name = request.args['firstname']
-    last_name = request.args['lastname']
-    
-    return render_template('hello2.html', firstname=first_name, lastname=last_name)
+
+    username = request.args['username']
+
+    return render_template('hello2.html', username=username)
