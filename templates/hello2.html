@@ -1,16 +1,16 @@
-<!doctype html>
-<html>
+{% extends "base.html" %}
 
-<body>
+{% block main_content %}
 
-    <h1>Registration completed succesfully.</h1>
+<div class="container-fluid">
+        <h1>Registration completed succesfully.</h1>
 
-    <h2>Welcome, {{username}}!</h2>
+        <h2>Welcome, {{username}}!</h2>
+    
+        <form method="post" action="/hello">
+            <button type="submit">Return to main page</button>
+        </form>
+</div>
 
-    <form method="post" action="/hello">
-        <button type="submit">Return to main page</button>
-    </form>
+{% endblock %}
 
-</body>
-
-</html>
