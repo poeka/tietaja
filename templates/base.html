@@ -2,69 +2,60 @@
 <!DOCTYPE html>
 <html {% block html_attribs %} lang="en" {% endblock html_attribs %}>
 {% block html %}
-  <head>
-    {%- block head %}
-    {%- block metas %}
-    <meta charset="utf-8">
-    <meta content="width = device-width, initial-scale = 1">
-    {%- endblock metas %}
-    <title>{% block title %}Änäritietäjä{% endblock %}</title>
 
-    <!-- Core CSS - Include with every page -->
-    {%- block styles %}
-    <link href="{{bootstrap_find_resource('css/bootstrap.css', cdn='bootstrap')}}" rel="stylesheet">
-    <link href="{{url_for('static', filename='css/base.css')}}" rel="stylesheet">
-    {%- endblock styles %}
-    {%- endblock head %}
-  </head>
+<head>
+  {%- block head %} {%- block metas %}
+  <meta charset="utf-8">
+  <meta content="width = device-width, initial-scale = 1"> {%- endblock metas %}
+  <title>{% block title %}Änäritietäjä{% endblock %}</title>
 
-  <body{% block body_attribs %}{% endblock body_attribs %}>
-    {% block body -%}
-    {% block navbar -%}
+  <!-- Core CSS - Include with every page -->
+  {%- block styles %}
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{{url_for('static', filename='css/base.css')}}" rel="stylesheet"> {%- endblock styles %} {%- endblock head %}
+</head>
 
-    <nav class="navbar navbar-inverse">
-      <div class="container-fluid">
+<body{% block body_attribs %}{% endblock body_attribs %}>
+  {% block body -%} {% block navbar -%}
 
-        <!-- Header -->
-        <div class="navbar-header">
-          <!-- This menu button shows up if browser has not enough space to show all the buttons -->
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-        </div>
-
-        <!-- Navigation Bar Items -->
-        <div class="collapse navbar-collapse" id="topNavBar">
-          <ul class="nav navbar-nav">
-              <li>
-                <i>My games</i>
-              </li>
-              <li>
-                <i>Statistics</i>
-              </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-    {%- endblock navbar %}
-    {% block content -%}
+  <nav class="navbar navbar-inverse">
     <div class="container-fluid">
-      <div style="background:transparent" !important class="jumbotron">
-        {% block main_content -%}
-        {%- endblock main_content%}
+
+      <!-- Header -->
+      <div class="navbar-header">
+        <!-- This menu button shows up if browser has not enough space to show all the buttons -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
+
+      <!-- Navigation Bar Items -->
+      <div class="collapse navbar-collapse" id="topNavBar">
+        <ul class="nav navbar-nav">
+          <li>
+            <i>My games</i>
+          </li>
+          <li>
+            <i>Statistics</i>
+          </li>
+        </ul>
       </div>
     </div>
-    {%- endblock content %}
-    {% block scripts %}
-    <!-- Bootstrap and Ajax JavaScript files -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-    <script src="{{bootstrap_find_resource('js/bootstrap.min.js', cdn='bootstrap')}}"></script>
-    {%- endblock scripts %}
-    {%- endblock body %}
+  </nav>
+  {%- endblock navbar %} {% block content -%}
+  <div class="container-fluid">
+    <div style="background:transparent" !important class="jumbotron">
+      {% block main_content -%} {%- endblock main_content%}
+    </div>
+  </div>
+  {%- endblock content %} {% block scripts %}
+  <!-- Bootstrap and Ajax JavaScript files -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js "></script> {%- endblock scripts %} {%- endblock body %}
   </body>
-{%- endblock html %}
+  {%- endblock html %}
+
 </html>
 {% endblock doc -%}
-

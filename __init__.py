@@ -3,10 +3,11 @@ import os
 from flask import Flask
 from flask_bootstrap import Bootstrap
 
+
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
-    
+
     Bootstrap(app)
 
     app.config.from_mapping(

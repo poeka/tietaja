@@ -1,25 +1,25 @@
-<!doctype html>
-<html>
+{% extends "base.html" %} {% block main_content %}
 
-<body>
 
-  <h1>Hello!</h1>
-
-  <form action="/register/" method="post">
-    Username:
-    <br>
-    <input type="text" name="username">
-    <br> Enter your password:
-    <br>
-    <input type="password" name="password1">
-    <br> Re-enter your password:
-    <br>
-    <input type="password" name="password2">
-    <br>
-    <input type="submit" value="Submit">
-    <br>
-  </form>
-
-</body>
-
-</html>
+<h1>Hello!</h1>
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-6 col-md-4 col-lg-3">
+      <form action="/register/" method="post">
+        Username:
+        <br>
+        <input class="form-control" type="text" name="username">
+        <br> Enter your password:
+        <br>
+        <input class="form-control" type="password" name="password1">
+        <br> Re-enter your password:
+        <br>
+        <input class="form-control" type="password" name="password2">
+        <br>
+        <input class="form-control" type="submit" value="Submit">
+        <br>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
