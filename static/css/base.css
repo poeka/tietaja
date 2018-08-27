@@ -2,6 +2,13 @@ head, body {
     background-color: #a8b4bd;
 }
 
-.navbar.navbar-inverse {
+.navbar.navbar-expand-lg {
   background-color: #28567a;
+}
+
+#usernameExists{
+    display: block;
+}     
+#usernameExists:empty{
+    display: none;
 }

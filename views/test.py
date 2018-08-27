@@ -11,9 +11,21 @@ from tietaja.database.db import get_db
 bp = Blueprint('test', __name__, template_folder='templates')
 
 
+@bp.route('/', methods=('GET', 'POST'))
+def index():
+
+    return render_template('index.html')
+
+
 @bp.route('/hello', methods=('GET', 'POST'))
 def hello():
-    return render_template('hello.html')
+
+    try:
+        message = request.args['message']
+    except:
+        message = ""
+
+    return render_template('hello.html', message=message)
 
 
 @bp.route('/register/', methods=('GET', 'POST'))
@@ -27,10 +39,14 @@ def handle_data():
 
     db = get_db()
 
-    db.execute(
-        'INSERT INTO user (username, password) VALUES (?, ?)',
-        (username, generate_password_hash(password1))
-    )
+    try:
+
+        db.execute(
+            'INSERT INTO user (username, password) VALUES (?, ?)',
+            (username, generate_password_hash(password1))
+        )
+    except:
+        return redirect(url_for('.hello', message="Username already in use!"))
 
     db.commit()
 
