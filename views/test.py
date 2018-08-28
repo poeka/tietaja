@@ -10,28 +10,20 @@ from tietaja.database.db import get_db
 
 bp = Blueprint('test', __name__, template_folder='templates')
 
-
 @bp.route('/', methods=('GET', 'POST'))
 def index():
 
     return render_template('index.html')
 
-
-@bp.route('/hello', methods=('GET', 'POST'))
-def hello():
-
-    try:
-        message = request.args['message']
-    except:
-        message = ""
-
-    return render_template('hello.html', message=message)
-
-
 @bp.route('/login_page', methods=('GET', 'POST'))
 def login_page():
 
     return render_template('login.html')
+
+@bp.route('/register_page', methods=('GET', 'POST'))
+def register_page():
+
+    return render_template('register.html')
 
 
 @bp.route('/login', methods=('GET', 'POST'))
@@ -54,9 +46,10 @@ def login():
             error = 'Incorrect password.'
 
         if error is None:
-            session.clear()
             session['user_id'] = user['id']
-            return render_template('hello2.html', username=username)
+            session['logged_in'] = True
+            print(session['logged_in'])
+            return render_template('home.html', username=username)
 
         flash(error)
 
@@ -70,7 +63,7 @@ def handle_data():
     password2 = request.form['password2']
 
     if password1 != password2:
-        return redirect(url_for('.hello'))
+        return redirect(url_for('.register_page'))
 
     db = get_db()
 
@@ -81,16 +74,17 @@ def handle_data():
             (username, generate_password_hash(password1))
         )
     except:
-        return redirect(url_for('.hello', message="Username already in use!"))
+        return redirect(url_for('.register_page', message="Username already in use!"))
 
     db.commit()
 
     return redirect(url_for('.show_hello', username=username))
 
 
-@bp.route('/show_hello/', methods=('GET', 'POST'))
-def show_hello():
-
-    username = request.args['username']
-
-    return render_template('hello2.html', username=username)
+@bp.route('/logout', methods=('GET', 'POST'))
+def logout():
+   session.pop('user_id', None)
+   session['logged_in'] = False
+   session.clear()
+   return render_template('/index.html')
+   

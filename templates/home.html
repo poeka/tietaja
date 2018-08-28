@@ -1,0 +1,30 @@
+{% extends "base.html" %} 
+
+{% block username %}
+{{username}}
+{% endblock %}
+
+{% block main_content %}
+
+<div class="container-fluid">
+
+    <h1>Welcome, {{username}}!</h1>
+
+    <h2>This could be your homepage?</h2>
+
+    <form method="post" action="/hello">
+        <button type="submit">Return to main page</button>
+    </form>
+</div>
+
+<div class="testdiv" id="testdiv">
+    <button type="submit">Hide me!</button>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script> 
+document.getElementById("testdiv").style.visibility = "hidden"
+</script>
+
+{% endblock %}
