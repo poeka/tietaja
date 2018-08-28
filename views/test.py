@@ -28,6 +28,41 @@ def hello():
     return render_template('hello.html', message=message)
 
 
+@bp.route('/login_page', methods=('GET', 'POST'))
+def login_page():
+
+    return render_template('login.html')
+
+
+@bp.route('/login', methods=('GET', 'POST'))
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        error = None
+
+        db = get_db()
+
+        user = db.execute(
+            'SELECT * FROM user WHERE username = ?', (username,)
+        ).fetchone()
+
+        if user is None:
+            error = 'Incorrect username.'
+        elif not check_password_hash(user['password'], password):
+            error = 'Incorrect password.'
+
+        if error is None:
+            session.clear()
+            session['user_id'] = user['id']
+            return render_template('hello2.html', username=username)
+
+        flash(error)
+
+    return render_template('/index.html')
+
+
 @bp.route('/register/', methods=('GET', 'POST'))
 def handle_data():
     username = request.form['username']

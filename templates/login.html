@@ -1,0 +1,25 @@
+{% extends "base.html" %} {% block main_content %}
+
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-6 col-md-4 col-lg-3">
+            <h1>Hello!</h1>
+
+            <div id="usernameExists" class="alert alert-danger" role="alert">{{message}}</div>
+
+            <form action="{{url_for('.login')}}" method="post">
+                Username:
+                <br>
+                <input class="form-control" type="text" name="username">
+                <br> Enter your password:
+                <br>
+                <input class="form-control" type="password" name="password">
+                <br>
+                <input class="form-control" type="submit" value="Submit">
+                <br>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
