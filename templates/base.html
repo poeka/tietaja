@@ -19,29 +19,31 @@
   {% block body -%} {% block navbar -%}
 
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="#">Tietäjä</a>
+
+    <a class="navbar-brand" href="/">Tietäjä</a>
+
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
       aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    {% if session.logged_in == True %}
+    {% if session.logged_in %}
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-          <a class="nav-link" href="#">Home
+          <a class="nav-link" href="{{url_for('.home')}}">Home
             <span class="sr-only">(current)</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">My Games</a>
+          <a class="nav-link" href="{{url_for('.games')}}">Games</a>
         </li>
       </ul>
-      <ul class="navbar-nav pull-right">  
+      <ul class="navbar-nav pull-right">
         <li class="nav-item ">
-          <a class="nav-link" href="#" >{% block username -%}{%- endblock username%}</a>
+          <a class="nav-link" href="#">{{session.username}}</a>
         </li>
         <li class="nav-item active">
-          <a class="nav-link" href="{{url_for('.logout')}}" >Logout</a>
+          <a class="nav-link" href="{{url_for('.logout')}}">Logout</a>
         </li>
       </ul>
     </div>
@@ -55,8 +57,8 @@
   </div>
   {%- endblock content %} {% block scripts %}
   <!-- Bootstrap and Ajax JavaScript files -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js "></script> {%- endblock scripts %} {%- endblock body %}
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script> {%- endblock scripts %} {%- endblock body %}
   </body>
   {%- endblock html %}
 

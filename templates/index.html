@@ -1,11 +1,18 @@
-{% extends "base.html" %} 
-
-{% block main_content %}
+{% extends "base.html" %} {% block main_content %}
 
 <div class="container-fluid">
+
+    <h2>Page is intentionally left blank, if an user is logged in.</h2>
+
+
+    {% if not session.logged_in %}
+
     <a href="{{url_for('.login_page')}}" class="btn btn-primary btn-lg">Log In</a>
 
     <a href="{{url_for('.register_page')}}" class="btn btn-secondary btn-lg">Register</a>
+
+    {% endif %}
+
 
 </div>
 

@@ -10,20 +10,40 @@ from tietaja.database.db import get_db
 
 bp = Blueprint('test', __name__, template_folder='templates')
 
+
 @bp.route('/', methods=('GET', 'POST'))
 def index():
 
     return render_template('index.html')
+
+
+@bp.route('/home', methods=('GET', 'POST'))
+def home():
+
+    return render_template('home.html')
+
+
+@bp.route('/games', methods=('GET', 'POST'))
+def games():
+
+    return render_template('games.html')
+
 
 @bp.route('/login_page', methods=('GET', 'POST'))
 def login_page():
 
     return render_template('login.html')
 
+
 @bp.route('/register_page', methods=('GET', 'POST'))
 def register_page():
 
-    return render_template('register.html')
+    try:
+        message = request.args['message']
+    except:
+        message = ""
+
+    return render_template('register.html', message=message)
 
 
 @bp.route('/login', methods=('GET', 'POST'))
@@ -47,17 +67,17 @@ def login():
 
         if error is None:
             session['user_id'] = user['id']
+            session['username'] = username
             session['logged_in'] = True
-            print(session['logged_in'])
-            return render_template('home.html', username=username)
+            return redirect(url_for('.home'))
 
-        flash(error)
+        # flash(error) #TODO
 
-    return render_template('/index.html')
+    return render_template('/login.html', message=error)
 
 
-@bp.route('/register/', methods=('GET', 'POST'))
-def handle_data():
+@bp.route('/register', methods=('GET', 'POST'))
+def register():
     username = request.form['username']
     password1 = request.form['password1']
     password2 = request.form['password2']
@@ -78,13 +98,19 @@ def handle_data():
 
     db.commit()
 
-    return redirect(url_for('.show_hello', username=username))
+    user = db.execute('SELECT * FROM user WHERE username = ?',
+                      (username,)).fetchone()
+
+    session['user_id'] = user['id']
+    session['username'] = username
+    session['logged_in'] = True
+
+    return redirect(url_for('.home'))
 
 
 @bp.route('/logout', methods=('GET', 'POST'))
 def logout():
-   session.pop('user_id', None)
-   session['logged_in'] = False
-   session.clear()
-   return render_template('/index.html')
-   
+    session.pop('user_id', None)
+    session['logged_in'] = False
+    session.clear()
+    return render_template('/index.html')

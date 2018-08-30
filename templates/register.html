@@ -8,7 +8,7 @@
 
       <div id="usernameExists" class="alert alert-danger" role="alert">{{message}}</div>
 
-      <form action="/register/" method="post">
+      <form action="{{url_for('.register')}}" method="post">
         Username:
         <br>
         <input class="form-control" type="text" name="username">
