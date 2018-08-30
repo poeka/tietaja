@@ -39,11 +39,17 @@
         </li>
       </ul>
       <ul class="navbar-nav pull-right">
-        <li class="nav-item ">
-          <a class="nav-link" href="#">{{session.username}}</a>
-        </li>
-        <li class="nav-item active">
-          <a class="nav-link" href="{{url_for('.logout')}}">Logout</a>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+            aria-expanded="false">
+            {{session.username}}
+          </a>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" href="#">Personal info</a>
+            <a class="dropdown-item" href="{{url_for( '.logout')}} ">Logout</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#">Something else here</a>
+          </div>
         </li>
       </ul>
     </div>
