@@ -11,6 +11,16 @@ from tietaja.database.db import get_db
 bp = Blueprint('test', __name__, template_folder='templates')
 
 
+def login_required(f):
+
+    @functools.wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not 'logged_in' in session:
+            return redirect('/')
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @bp.route('/', methods=('GET', 'POST'))
 def index():
 
@@ -18,12 +28,14 @@ def index():
 
 
 @bp.route('/home', methods=('GET', 'POST'))
+@login_required
 def home():
 
     return render_template('home.html')
 
 
 @bp.route('/games', methods=('GET', 'POST'))
+@login_required
 def games():
 
     return render_template('games.html')
@@ -69,6 +81,7 @@ def login():
             session['user_id'] = user['id']
             session['username'] = username
             session['logged_in'] = True
+            g.user = user
             return redirect(url_for('.home'))
 
         # flash(error) #TODO
@@ -83,7 +96,7 @@ def register():
     password2 = request.form['password2']
 
     if password1 != password2:
-        return redirect(url_for('.register_page'))
+        return redirect(url_for('.register_page', message="Passwords did not match"))
 
     db = get_db()
 
@@ -110,7 +123,5 @@ def register():
 
 @bp.route('/logout', methods=('GET', 'POST'))
 def logout():
-    session.pop('user_id', None)
-    session['logged_in'] = False
     session.clear()
     return render_template('/index.html')

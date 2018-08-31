@@ -12,7 +12,10 @@
   <!-- Core CSS - Include with every page -->
   {%- block styles %}
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
-  <link href="{{url_for('static', filename='css/base.css')}}" rel="stylesheet"> {%- endblock styles %} {%- endblock head %}
+  <link href="{{url_for('static', filename='css/base.css')}}" rel="stylesheet"> {%- endblock styles %} {% block scripts %}
+  <!-- Bootstrap and Ajax JavaScript files -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script> {%- endblock scripts %}{%- endblock head %}
 </head>
 
 <body{% block body_attribs %}{% endblock body_attribs %}>
@@ -61,10 +64,7 @@
       {% block main_content -%} {%- endblock main_content%}
     </div>
   </div>
-  {%- endblock content %} {% block scripts %}
-  <!-- Bootstrap and Ajax JavaScript files -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script> {%- endblock scripts %} {%- endblock body %}
+  {%- endblock content %} {%- endblock body %}
   </body>
   {%- endblock html %}
 
