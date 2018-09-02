@@ -1,12 +1,23 @@
-    <div class="modal-header">          
-        <h4 class="modal-title">Create new game</h4>
-    </div>
-    <div class="modal-body">
-        <p>Select games here</p>
-        <p>Start Date: {{startDate}}</p>
-        <p>End Date: {{endDate}}</p>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Create a new game</button>
-    </div>
+<div class="modal-header">
+    <h4 class="modal-title">Create new game</h4>
+</div>
+<div class="modal-body">
+    <p>Select games here</p>
+    <p>Start Date: {{startDate}}</p>
+    <p>End Date: {{endDate}}</p>
+</div>
+
+<div>
+    <table>
+        {% for key, value in d.items() %}
+        <tr>
+            <th> {{ key }} </th>
+            <td> {{ value }} </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-default" data-dismiss="modal">Create a new game</button>
+</div>

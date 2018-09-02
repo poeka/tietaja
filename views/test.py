@@ -1,7 +1,9 @@
 import functools
+import requests
+import json
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify
 )
 
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -126,18 +128,41 @@ def logout():
     session.clear()
     return render_template('/index.html')
 
+
 @bp.route('/select_new_game_dates', methods=('GET', 'POST'))
 def select_new_game_dates():
     return render_template('/select_new_game_dates.html')
+
 
 @bp.route('/select_included_games', methods=('GET', 'POST'))
 def select_included_games():
     start_date = request.args.get("startDate")
     end_date = request.args.get("endDate")
 
-    print(start_date)
-    print(end_date)
+    uri = "https://statsapi.web.nhl.com/api/v1/schedule?startDate=" + \
+        start_date+"&endDate="+end_date
+    try:
+        uResponse = requests.get(uri)
+    except requests.ConnectionError:
+        return "Connection Error"
+    Jresponse = uResponse.text
+    data = json.loads(Jresponse)
 
-    #TODO: Get games based on start and end dates 
+    d = {}
+    home = ""
+    away = ""
 
-    return render_template('/select_included_games.html', startDate=start_date, endDate = end_date)
+    print(data['totalGames'])
+    for date in data['dates']:
+        for game in date['games']:
+            gameId = game['gamePk']
+            for key, value in game['teams'].items():
+                if key == 'away':
+                    away = value['team']['name']
+                elif key == 'home':
+                    home = value['team']['name']
+                d[gameId] = home + ' - ' + away
+
+    # TODO: Get games based on start and end dates
+
+    return render_template('/select_included_games.html', startDate=start_date, endDate=end_date, d=d)
