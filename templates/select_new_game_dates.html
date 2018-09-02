@@ -1,0 +1,38 @@
+        <div class="modal-header">          
+            <h4 class="modal-title">Create new game</h4>
+        </div>
+        <div class="modal-body">
+            <p>Define game period</p>
+
+         
+            <div class="form-group">
+                <label for="start_date">Start Date:</label>
+                <input type="date" class="form-control" id="start_date">
+                <label for="end_date">End Date:</label>
+                <input type="date" class="form-control" id="end_date">
+            </div>
+           
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-default" id="select_dates_ok_button" >Go to game selector</button>
+        </div>
+
+        <script type="text/javascript"> 
+
+            $("#select_dates_ok_button").click(function(){
+                var start_date = $("#start_date").val().toString();
+                var end_date = $("#end_date").val().toString();
+
+                if( start_date && end_date ){
+
+                    var url = "select_included_games?startDate="+start_date+"&endDate="+end_date;
+                    $(".modal-content").load(url); 
+                 } else {
+                    window.alert("Start Date or End date can not be empty");
+                 }
+            });
+        </script>
+
+
+ 

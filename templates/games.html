@@ -1,4 +1,6 @@
-{% extends "base.html" %} {% block username %} {{username}} {% endblock %} {% block main_content %}
+{% extends "base.html" %} 
+
+{% block username %} {{username}} {% endblock %} {% block main_content %}
 
 <div class="container-fluid">
 
@@ -6,6 +8,27 @@
 
     <h2>Create, edit or search games here</h2>
 
+    <button type="button" id="new_game_dialog" class="btn btn-info btn-lg" data-toggle="modal"  data-target="#createGameModal">Create new game</button>
+
+ 
 </div>
 
+<div id="createGameModal" class="modal fade">
+    <div class="modal-dialog">
+      <div class="modal-content">
+           
+      </div>
+    </div>
+</div>
+
+<script type="text/javascript"> 
+    $("#new_game_dialog").click(function(){
+        $(".modal-content").load("select_new_game_dates"); 
+    });
+</script> 
+
+
+
 {% endblock %}
+
+

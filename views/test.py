@@ -125,3 +125,19 @@ def register():
 def logout():
     session.clear()
     return render_template('/index.html')
+
+@bp.route('/select_new_game_dates', methods=('GET', 'POST'))
+def select_new_game_dates():
+    return render_template('/select_new_game_dates.html')
+
+@bp.route('/select_included_games', methods=('GET', 'POST'))
+def select_included_games():
+    start_date = request.args.get("startDate")
+    end_date = request.args.get("endDate")
+
+    print(start_date)
+    print(end_date)
+
+    #TODO: Get games based on start and end dates 
+
+    return render_template('/select_included_games.html', startDate=start_date, endDate = end_date)
