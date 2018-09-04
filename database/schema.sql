@@ -9,6 +9,12 @@ CREATE TABLE user (
 
 CREATE TABLE game (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  creator TEXT NOT NULL,
-  gameIds TEXT NOT NULL
+  creator TEXT NOT NULL
+);
+
+CREATE TABLE match
+(
+  id INTEGER PRIMARY KEY,
+  matchId TEXT NOT NULL,
+  FOREIGN KEY (id) REFERENCES game (id)
 );
