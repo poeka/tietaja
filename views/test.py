@@ -50,6 +50,23 @@ def user_info():
     return render_template('user_info.html')
 
 
+@bp.route('/game', methods=('GET', 'POST'))
+@login_required
+def game():
+
+    print(request.form.getlist('selected[]'))
+
+    try:
+        selected = request.form.getlist('selected[]')
+
+        # TODO: Insert game to database
+
+    except:
+        print('error')
+
+    return render_template('game.html', games=selected)
+
+
 @bp.route('/login_page', methods=('GET', 'POST'))
 def login_page():
 
@@ -169,7 +186,5 @@ def select_included_games():
                 elif key == 'home':
                     home = value['team']['name']
                 d[gameId] = home + ' - ' + away
-
-    # TODO: Get games based on start and end dates
 
     return render_template('/select_included_games.html', startDate=start_date, endDate=end_date, d=d)
