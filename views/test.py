@@ -43,6 +43,13 @@ def games():
     return render_template('games.html')
 
 
+@bp.route('/user_info', methods=('GET', 'POST'))
+@login_required
+def user_info():
+
+    return render_template('user_info.html')
+
+
 @bp.route('/login_page', methods=('GET', 'POST'))
 def login_page():
 

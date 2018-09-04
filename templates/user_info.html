@@ -1,0 +1,11 @@
+{% extends "base.html" %} {% block username %} {{username}} {% endblock %} {% block main_content %}
+
+<div class="container-fluid">
+
+    <h1>Welcome, {{session.username}}!</h1>
+
+    <h2>Change user settings here</h2>
+
+</div>
+
+{% endblock %}
