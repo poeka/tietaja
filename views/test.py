@@ -60,29 +60,28 @@ def game():
 
     try:
         selected = request.form.getlist('selected[]')
-        gameid = randint(10000,99999)
+        gameid = randint(10000, 99999)
         user_id = session['user_id']
-
 
         db = get_db()
         db.execute(
             'INSERT INTO game (game_id, creator) VALUES (?, ?)',
             (gameid, user_id)
-            )
+        )
 
-        for matchid in selected:              
+        for matchid in selected:
             db.execute(
                 'INSERT INTO match (match_id, game_id) VALUES (?, ?)',
                 (matchid, gameid)
-                )
-
+            )
+        db.commit()
         print('done')
-
+        return render_template('game.html', games=selected)
 
     except:
         print('error')
 
-    return render_template('game.html', games=selected)
+    return redirect(url_for('.home'))
 
 
 @bp.route('/login_page', methods=('GET', 'POST'))
