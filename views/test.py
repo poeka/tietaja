@@ -2,6 +2,7 @@ import functools
 import requests
 import json
 
+
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify
 )
@@ -9,6 +10,7 @@ from flask import (
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from tietaja.database.db import get_db
+from random import randint
 
 bp = Blueprint('test', __name__, template_folder='templates')
 
@@ -58,8 +60,24 @@ def game():
 
     try:
         selected = request.form.getlist('selected[]')
+        gameid = randint(10000,99999)
+        user_id = session['user_id']
 
-        # TODO: Insert game to database
+
+        db = get_db()
+        db.execute(
+            'INSERT INTO game (game_id, creator) VALUES (?, ?)',
+            (gameid, user_id)
+            )
+
+        for matchid in selected:              
+            db.execute(
+                'INSERT INTO match (match_id, game_id) VALUES (?, ?)',
+                (matchid, gameid)
+                )
+
+        print('done')
+
 
     except:
         print('error')
