@@ -1,5 +1,21 @@
 # tietaja
 
+## Create & Activate virtual environment
+
+### Linux
+
+```sh
+tietaja> python3 -m venv .
+tietaja> source bin/activate
+```
+
+### Windows
+
+```sh
+python3 -m venv .
+tutorial-env\Scripts\activate.bat
+```
+
 ## Install dependencies
 
 ```sh
