@@ -12,8 +12,8 @@ tietaja> source bin/activate
 ### Windows
 
 ```sh
-python3 -m venv .
-tutorial-env\Scripts\activate.bat
+tietaja> python3 -m venv .
+tietaja> tutorial-env\Scripts\activate.bat
 ```
 
 ## Install dependencies
