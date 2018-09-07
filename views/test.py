@@ -267,18 +267,13 @@ def select_included_games():
     data = json.loads(Jresponse)
 
     d = {}
-    home = ""
-    away = ""
-
+        
     print(data['totalGames'])
     for date in data['dates']:
         for game in date['games']:
             gameId = game['gamePk']
-            for key, value in game['teams'].items():
-                if key == 'away':
-                    away = value['team']['name']
-                elif key == 'home':
-                    home = value['team']['name']
-                d[gameId] = home + ' - ' + away
+            away = game['teams']['away']['team']['name']
+            home = game['teams']['home']['team']['name']
+            d[gameId] = home + ' - ' + away
 
     return render_template('/select_included_games.html', startDate=start_date, endDate=end_date, d=d)
