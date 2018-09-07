@@ -42,7 +42,16 @@ def home():
 @login_required
 def games():
 
-    return render_template('games.html')
+    db = get_db()
+    userCreated = db.execute(
+        # Own games
+        'SELECT * FROM game WHERE creator = ?', (session['user_id'],)).fetchall()
+
+    userJoined = db.execute(
+        # Joined games
+        'SELECT * FROM joined WHERE player = ?', (session['user_id'],)).fetchall()
+
+    return render_template('games.html', userCreated=userCreated, userJoined=userJoined)
 
 
 @bp.route('/user_info', methods=('GET', 'POST'))
@@ -56,32 +65,53 @@ def user_info():
 @login_required
 def game():
 
-    print(request.form.getlist('selected[]'))
+    if request.method == 'POST':
 
-    try:
-        selected = request.form.getlist('selected[]')
-        gameid = randint(10000, 99999)
-        user_id = session['user_id']
+        print(request.form.getlist('selected[]'))
+
+        try:
+            selected = request.form.getlist('selected[]')
+            gameid = randint(10000, 99999)
+            user_id = session['user_id']
+
+            db = get_db()
+            db.execute(
+                'INSERT INTO game (game_id, creator) VALUES (?, ?)',
+                (gameid, user_id)
+            )
+
+            for matchid in selected:
+                db.execute(
+                    'INSERT INTO match (match_id, game_id) VALUES (?, ?)',
+                    (matchid, gameid)
+                )
+            db.commit()
+            print('done')
+            return render_template('game.html', games=selected)
+
+        except:
+            print('error')
+
+            return redirect(url_for('.home'))
+
+    else:
+        try:
+            gameId = request.args['gameId']
+        except:
+            return redirect(url_for('.games'))
 
         db = get_db()
-        db.execute(
-            'INSERT INTO game (game_id, creator) VALUES (?, ?)',
-            (gameid, user_id)
-        )
+        games = db.execute('SELECT * FROM match WHERE game_id = ?',
+                           (gameId,)).fetchall()
 
-        for matchid in selected:
-            db.execute(
-                'INSERT INTO match (match_id, game_id) VALUES (?, ?)',
-                (matchid, gameid)
-            )
-        db.commit()
-        print('done')
-        return render_template('game.html', games=selected)
+        if len(games) > 0:
+            selected = []
+            for game in games:
+                selected.append(game['match_id'])
 
-    except:
-        print('error')
+            return render_template('game.html', games=selected)
 
-    return redirect(url_for('.home'))
+        return redirect(url_for('.games'))
 
 
 @bp.route('/login_page', methods=('GET', 'POST'))
@@ -124,7 +154,7 @@ def login():
             session['user_id'] = user['id']
             session['username'] = username
             session['logged_in'] = True
-            g.user = user
+
             return redirect(url_for('.home'))
 
         # flash(error) #TODO
@@ -170,12 +200,64 @@ def logout():
     return render_template('/index.html')
 
 
+@bp.route('/join_game', methods=('GET', 'POST'))
+@login_required
+def join_game():
+    return render_template('/join_game.html')
+
+
+@bp.route('/join', methods=('GET', 'POST'))
+@login_required
+def join():
+
+    gameId = int(request.args.get("gameId"))
+
+    db = get_db()
+
+    # Check if the game to be joined is created by the user
+    # There can be only one game with this game ID
+
+    gameToJoin = db.execute('SELECT * FROM game WHERE game_id = ?',
+                            (gameId,)).fetchone()
+
+    if gameToJoin == None:
+        print('Game does not exist.')
+        return redirect(url_for('.games'))
+
+    if gameToJoin['creator'] == session['user_id']:
+        print("Own game! No need to join.")
+        return redirect(url_for('.games'))
+
+    # Check that the user has not joined the game yet
+
+    games = db.execute('SELECT * FROM joined WHERE game_id = ?',
+                       (gameId,)).fetchall()
+
+    if len(games) > 0:
+        print('haloo1')
+        for game in games:
+            if game['game_id'] == gameId:
+                if session['user_id'] == game['player']:
+                    return redirect(url_for('.games'))
+
+    else:
+        db.execute(
+            'INSERT INTO joined (game_id, player) VALUES (?, ?)',
+            (gameId, session['user_id'])
+        )
+        db.commit()
+
+        return redirect(url_for('.games'))
+
+
 @bp.route('/select_new_game_dates', methods=('GET', 'POST'))
+@login_required
 def select_new_game_dates():
     return render_template('/select_new_game_dates.html')
 
 
 @bp.route('/select_included_games', methods=('GET', 'POST'))
+@login_required
 def select_included_games():
     start_date = request.args.get("startDate")
     end_date = request.args.get("endDate")

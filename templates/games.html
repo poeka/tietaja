@@ -1,6 +1,4 @@
-{% extends "base.html" %} 
-
-{% block username %} {{username}} {% endblock %} {% block main_content %}
+{% extends "base.html" %} {% block username %} {{username}} {% endblock %} {% block main_content %}
 
 <div class="container-fluid">
 
@@ -8,27 +6,52 @@
 
     <h2>Create, edit or search games here</h2>
 
-    <button type="button" id="new_game_dialog" class="btn btn-info btn-lg" data-toggle="modal"  data-target="#createGameModal">Create new game</button>
+    <button type="button" id="new_game_dialog" class="btn btn-info btn-lg" data-toggle="modal" data-target="#newGameModal">Create
+        new game</button>
 
- 
+    <button type="button" id="join_game_dialog" class="btn btn-info btn-lg" data-toggle="modal" data-target="#joinGameModal">Join
+        game</button>
+
+
 </div>
 
-<div id="createGameModal" class="modal fade">
+<div id="newGameModal" class="modal fade">
     <div class="modal-dialog">
-      <div class="modal-content">
-           
-      </div>
+        <div id="newContent" class="modal-content">
+
+        </div>
     </div>
 </div>
 
-<script type="text/javascript"> 
-    $("#new_game_dialog").click(function(){
-        $(".modal-content").load("select_new_game_dates"); 
+<div id="joinGameModal" class="modal fade">
+    <div class="modal-dialog">
+        <div id="joinContent" class="modal-content">
+
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <h3>My games</h3>
+    {%for item in userCreated%}
+    <h5><a href="game?gameId={{item['game_id']}}">{{item['game_id']}}</a></h5>
+    {%endfor%}
+</div>
+
+<div class="container-fluid">
+    <h3>Joined games</h3>
+    {%for item in userJoined%}
+    <h5>{{item['game_id']}}</h5>
+    {%endfor%}
+</div>
+
+<script type="text/javascript">
+
+    $("#new_game_dialog").click(function () {
+        $("#newContent").load("select_new_game_dates");
     });
-</script> 
+    $("#join_game_dialog").click(function () {
+        $("#joinContent").load("join_game");
+    });
 
-
-
-{% endblock %}
-
-
+</script> {% endblock %}
