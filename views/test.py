@@ -230,24 +230,19 @@ def join():
 
     # Check that the user has not joined the game yet
 
-    games = db.execute('SELECT * FROM joined WHERE game_id = ?',
-                       (gameId,)).fetchall()
+    game = db.execute('SELECT * FROM joined WHERE game_id = ? AND player = ?',
+        (gameId, session['user_id'])).fetchone()
 
-    if len(games) > 0:
-        print('haloo1')
-        for game in games:
-            if game['game_id'] == gameId:
-                if session['user_id'] == game['player']:
-                    return redirect(url_for('.games'))
-
-    else:
-        db.execute(
-            'INSERT INTO joined (game_id, player) VALUES (?, ?)',
-            (gameId, session['user_id'])
-        )
-        db.commit()
-
+    if game:
         return redirect(url_for('.games'))
+
+    db.execute(
+        'INSERT INTO joined (game_id, player) VALUES (?, ?)',
+        (gameId, session['user_id'])
+    )
+    db.commit()
+
+    return redirect(url_for('.games'))
 
 
 @bp.route('/select_new_game_dates', methods=('GET', 'POST'))
