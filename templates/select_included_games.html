@@ -8,17 +8,19 @@
 </div>
 
 <form action="{{url_for('.game')}}" method="post">
-    <div>
+    <div class="ml-2">
         <table>
             {% for key, value in d.items() %}
-            <tr>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="selected[]" value="{{ key }}" id="defaultCheck1">
-                    <label class="form-check-label" for="defaultCheck1">
-                        {{ value }}
-                    </label>
-                </div>
-            </tr>
+            <b>
+                <tr>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="selected[]" value="{{ key }}" id="{{ key }}">
+                        <label class="form-check-label" for="{{ key }}">
+                            {{ value }}
+                        </label>
+                    </div>
+                </tr>
+            </b>
             {% endfor %}
         </table>
     </div>

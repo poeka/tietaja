@@ -101,17 +101,19 @@ def game():
             return redirect(url_for('.games'))
 
         db = get_db()
+
+        if not db.execute('SELECT * FROM game WHERE game_id = ?',
+                          (gameId,)).fetchone():
+            return redirect(url_for('.games'))
+
         games = db.execute('SELECT * FROM match WHERE game_id = ?',
                            (gameId,)).fetchall()
 
-        if len(games) > 0:
-            selected = []
-            for game in games:
-                selected.append(game['match_id'])
+        selected = []
+        for game in games:
+            selected.append(game['match_id'])
 
-            return render_template('game.html', games=selected)
-
-        return redirect(url_for('.games'))
+        return render_template('game.html', games=selected)
 
 
 @bp.route('/login_page', methods=('GET', 'POST'))
@@ -231,7 +233,7 @@ def join():
     # Check that the user has not joined the game yet
 
     game = db.execute('SELECT * FROM joined WHERE game_id = ? AND player = ?',
-        (gameId, session['user_id'])).fetchone()
+                      (gameId, session['user_id'])).fetchone()
 
     if game:
         return redirect(url_for('.games'))
@@ -267,7 +269,7 @@ def select_included_games():
     data = json.loads(Jresponse)
 
     d = {}
-        
+
     print(data['totalGames'])
     for date in data['dates']:
         for game in date['games']:

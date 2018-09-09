@@ -12,3 +12,8 @@ head, body {
 #usernameExists:empty{
     display: none;
 }
+
+.dateLabel{
+    display: block;
+    width: 100px;
+}

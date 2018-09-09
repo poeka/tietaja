@@ -4,12 +4,21 @@
 <div class="modal-body">
     <p>Define game period</p>
 
-
     <div class="form-group">
-        <label for="start_date">Start Date:</label>
-        <input type="date" class="form-control" id="start_date">
-        <label for="end_date">End Date:</label>
-        <input type="date" class="form-control" id="end_date">
+        <div class="input-group date mb-1">
+            <label class="dateLabel" for="start_date">Start Date:</label>
+            <input class="datepicker" data-date-format="mm/dd/yyyy" id="start_date">
+            <div class="input-group-addon">
+                <span class="glyphicon glyphicon-th"></span>
+            </div>
+        </div>
+        <div class="input-group date">
+            <label class="dateLabel" for="end_date">End Date:</label>
+            <input class="datepicker" data-date-format="mm/dd/yyyy" id="end_date">
+            <div class="input-group-addon">
+                <span class="glyphicon glyphicon-th"></span>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -18,7 +27,27 @@
     <button type="button" class="btn btn-default" id="select_dates_ok_button">Go to game selector</button>
 </div>
 
-<script type="text/javascript"> 
+<script type="text/javascript">
+
+
+    $('#end_date').datepicker({
+        format: 'yyyy-mm-dd',
+        startDate: $("#start_date").val().toString(),
+        autoclose: true
+
+    });
+
+
+    $('#start_date').datepicker({
+        format: 'yyyy-mm-dd',
+        startDate: '0d',
+        autoclose: true,
+        todayHighlight: true
+    }).on('changeDate', function (e) {
+
+        $('#end_date').datepicker('setStartDate', e.date);
+
+    });
 
     $("#select_dates_ok_button").click(function () {
         var start_date = $("#start_date").val().toString();
