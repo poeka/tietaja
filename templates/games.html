@@ -41,7 +41,7 @@
 <div class="container-fluid">
     <h3>Joined games</h3>
     {%for item in userJoined%}
-    <h5>{{item['game_id']}}</h5>
+    <h5><a href="game?gameId={{item['game_id']}}">{{item['game_id']}}</a></h5>
     {%endfor%}
 </div>
 

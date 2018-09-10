@@ -67,10 +67,10 @@ def game():
 
     if request.method == 'POST':
 
-        print(request.form.getlist('selected[]'))
+        print(request.form.getlist('selected'))
 
         try:
-            selected = request.form.getlist('selected[]')
+            selected = request.form.getlist('selected')
             gameid = randint(10000, 99999)
             user_id = session['user_id']
 
