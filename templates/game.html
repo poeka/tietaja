@@ -1,9 +1,21 @@
 {% extends "base.html" %} {% block username %} {{username}} {% endblock %} {% block main_content %}
 
-<div class="container-fluid">
+<div class="container-fluid" id="games">
 
-    <h2>Selected games' IDs: {{games}}!</h2>
+    <h2>Selected games:</h2>
 
 </div>
+
+<script>
+
+    var games = [{{ ','.join(games) }}];
+
+    games.forEach(function (gameId) {
+        $.getJSON('https://statsapi.web.nhl.com/api/v1/game/' + gameId + '/boxscore', function (data) {
+            $('#games').append($('<div>' + data.teams.home.team.name + '-' + data.teams.away.team.name + '</div>'))
+        });
+    });
+
+</script>
 
 {% endblock %}
