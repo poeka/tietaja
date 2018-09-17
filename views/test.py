@@ -279,3 +279,13 @@ def select_included_games():
             d[gameId] = home + ' - ' + away
 
     return render_template('/select_included_games.html', startDate=start_date, endDate=end_date, d=d)
+
+@bp.route('/set_predictions',  methods=('GET', 'POST'))
+@login_required
+def set_predictions():
+    print(request.form.getlist('games'))
+    print(request.form.getlist('prediction'))
+    games = request.form.getlist('games')
+    predictions = request.form.getlist('prediction')
+
+    return render_template('game.html', games=games)

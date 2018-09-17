@@ -4,15 +4,33 @@
 
     <h2>Selected games:</h2>
 
+    <form action="{{url_for('.set_predictions')}}" method="post">
+        <input type="hidden" name="games" value={{games}}><br>
+        <div id="predict_form_content">
+        </div>
+        <div style="margin-top: 25px;">
+            <button type="submit" class="btn btn-secondary active"> Save predictions</button>
+        </div>
+    </form>
+
 </div>
 
 <script>
 
-    var games = [{{ ','.join(games) }}];
+    var all_games = [{{','.join(games)}}];
 
-    games.forEach(function (gameId) {
+    all_games.forEach(function (gameId) {
         $.getJSON('https://statsapi.web.nhl.com/api/v1/game/' + gameId + '/boxscore', function (data) {
-            $('#games').append($('<div>' + data.teams.home.team.name + '-' + data.teams.away.team.name + '</div>'))
+            $('#predict_form_content').append($('<div style="margin-top: 25px;">' + data.teams.home.team.name + '-' + data.teams.away.team.name + 
+                '<div class="btn-group btn-group-toggle" data-toggle="buttons" style="float:right;margin-right: 50%;">' + 
+                    '<label class="btn btn-secondary active">' + 
+                        '<input type="radio" name="prediction" id="option_1" value="1"  checked> 1</label>' + 
+                    '<label class="btn btn-secondary">' + 
+                        '<input type="radio" name="prediction" id="option_x" value="X" > X</label>' + 
+                    '<label class="btn btn-secondary">' + 
+                        '<input type="radio" name="prediction" id="option_2" value="2" > 2 </label>' + 
+                '</div>' + 
+                '</div>'));
         });
     });
 
