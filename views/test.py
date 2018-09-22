@@ -76,8 +76,8 @@ def game():
 
             db = get_db()
             db.execute(
-                'INSERT INTO game (game_id, creator) VALUES (?, ?)',
-                (gameid, user_id)
+                'INSERT INTO game (game_id, creator, owner_bet) VALUES (?, ?, ?)',
+                (gameid, user_id, False)
             )
 
             for matchid in selected:
@@ -87,7 +87,7 @@ def game():
                 )
             db.commit()
             print('done')
-            return render_template('game.html', games=selected)
+            return redirect(url_for('.games'))
 
         except:
             print('error')
@@ -95,6 +95,7 @@ def game():
             return redirect(url_for('.home'))
 
     else:
+        user_id = session['user_id']
         try:
             gameId = request.args['gameId']
         except:
@@ -108,12 +109,44 @@ def game():
 
         games = db.execute('SELECT * FROM match WHERE game_id = ?',
                            (gameId,)).fetchall()
-
+        
+        
         selected = []
-        for game in games:
-            selected.append(game['match_id'])
 
-        return render_template('game.html', games=selected)
+        for game in games:
+            uri = 'https://statsapi.web.nhl.com/api/v1/game/' + game['match_id'] + '/boxscore'
+
+            try:
+                uResponse = requests.get(uri)
+            except requests.ConnectionError:
+                return "Connection Error"
+            Jresponse = uResponse.text
+            data = json.loads(Jresponse)
+
+            matchid = game['match_id']
+            away = data['teams']['away']['team']['name']
+            home = data['teams']['home']['team']['name']
+
+            selected.append({'game_id': gameId, 'match_id':matchid, 'away':away, 'home':home})
+
+        print(selected)
+
+
+        # Check if bet is already set
+
+        gameToCheck = db.execute('SELECT * FROM game WHERE game_id = ?',
+                        (gameId,)).fetchone()
+        
+        if gameToCheck['creator'] == session['user_id']:
+            bet = gameToCheck['owner_bet']
+        else:
+            gameToCheck = db.execute('SELECT * FROM joined WHERE game_id = ? AND player = ?',
+                        (gameId,session['user_id'])).fetchone()
+            bet = gameToCheck['bet']
+
+
+        return render_template('game.html', games=selected, bet = bet )
+
 
 
 @bp.route('/login_page', methods=('GET', 'POST'))
@@ -239,8 +272,8 @@ def join():
         return redirect(url_for('.games'))
 
     db.execute(
-        'INSERT INTO joined (game_id, player) VALUES (?, ?)',
-        (gameId, session['user_id'])
+        'INSERT INTO joined (game_id, player, bet) VALUES (?, ?, ?)',
+        (gameId, session['user_id'], False)
     )
     db.commit()
 
@@ -283,9 +316,87 @@ def select_included_games():
 @bp.route('/set_predictions',  methods=('GET', 'POST'))
 @login_required
 def set_predictions():
-    print(request.form.getlist('games'))
-    print(request.form.getlist('prediction'))
-    games = request.form.getlist('games')
-    predictions = request.form.getlist('prediction')
 
-    return render_template('game.html', games=games)
+    print(request.form)
+    print(request.form['game_id'])
+    print(request.form.getlist('match_id'))
+
+    #try:
+    gameId = request.form['game_id']
+    matches = request.form.getlist('match_id')
+    user_id = session['user_id']
+
+    db = get_db()
+
+    for match in matches:
+        prediction = request.form[match]
+        print(gameId)
+        print(match)
+        print(user_id)
+        print(prediction)
+        db.execute(
+                'INSERT INTO bet (game_id, match_id, player, prediction) VALUES (?, ?, ?, ?)',
+                (gameId, match, user_id, prediction)
+            )    
+    db.commit()
+
+    print('done1')
+
+    bet = True
+
+        # Check if game is owned
+
+    gameToCheck = db.execute('SELECT * FROM game WHERE game_id = ?',
+                    (gameId,)).fetchone()
+    
+    if gameToCheck['creator'] == user_id:
+        print(user_id)
+        db.execute(
+                'UPDATE game SET owner_bet = ? WHERE game_id = ? )',
+                (True, gameId)
+            )
+        db.commit()
+    else:
+        db.execute(
+                'UPDATE joined SET bet = ? WHERE game_id = ? AND player = ?)',
+                (bet, gameId, user_id,)
+            )
+        db.commit()
+    print('done2')
+
+    games = db.execute('SELECT * FROM match WHERE game_id = ?',
+                        (gameId,)).fetchall()
+    print('done3')
+    
+    
+    selected = []
+
+    for game in games:
+        uri = 'https://statsapi.web.nhl.com/api/v1/game/' + game['match_id'] + '/boxscore'
+
+        try:
+            uResponse = requests.get(uri)
+        except requests.ConnectionError:
+            return "Connection Error"
+        Jresponse = uResponse.text
+        data = json.loads(Jresponse)
+
+        matchid = game['match_id']
+        away = data['teams']['away']['team']['name']
+        home = data['teams']['home']['team']['name']
+
+
+        selected.append({'game_id': gameId, 'match_id':matchid, 'away':away, 'home':home})
+        
+
+    print('done4')
+    return render_template('game.html', games=games, bet=bet)
+
+
+    #except:
+     #   print('error')
+
+      #  return redirect(url_for('.home'))
+
+
+
