@@ -77,7 +77,7 @@ def game():
             db = get_db()
             db.execute(
                 'INSERT INTO game (game_id, creator, owner_bet) VALUES (?, ?, ?)',
-                (gameid, user_id, False)
+                (gameid, user_id, 0)
             )
 
             for matchid in selected:
@@ -144,8 +144,8 @@ def game():
                         (gameId,session['user_id'])).fetchone()
             bet = gameToCheck['bet']
 
-
-        return render_template('game.html', games=selected, bet = bet )
+        print(bet)
+        return render_template('game.html', games=selected, bet=bet )
 
 
 
@@ -273,7 +273,7 @@ def join():
 
     db.execute(
         'INSERT INTO joined (game_id, player, bet) VALUES (?, ?, ?)',
-        (gameId, session['user_id'], False)
+        (gameId, session['user_id'], 0)
     )
     db.commit()
 
@@ -342,7 +342,7 @@ def set_predictions():
 
     print('done1')
 
-    bet = True
+    bet = 1
 
         # Check if game is owned
 
@@ -352,8 +352,8 @@ def set_predictions():
     if gameToCheck['creator'] == user_id:
         print(user_id)
         db.execute(
-                'UPDATE game SET owner_bet = ? WHERE game_id = ? )',
-                (True, gameId)
+                'UPDATE game SET owner_bet = ? WHERE game_id = ? ',
+                (1, gameId)
             )
         db.commit()
     else:
@@ -390,7 +390,9 @@ def set_predictions():
         
 
     print('done4')
-    return render_template('game.html', games=games, bet=bet)
+    print(selected)
+    print(bet)
+    return render_template('game.html', games=selected, bet=bet)
 
 
     #except:
