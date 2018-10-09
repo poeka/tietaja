@@ -17,3 +17,13 @@ head, body {
     display: block;
     width: 100px;
 }
+
+#left{
+ width:50%;
+ float:left;   
+}
+
+#right{
+ width:50%;
+ float:right;   
+}

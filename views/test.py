@@ -111,6 +111,28 @@ def game():
                            (gameId,)).fetchall()
         
         
+
+
+        print("Get game details")
+        # Check if bet is already set
+
+        gameToCheck = db.execute('SELECT * FROM game WHERE game_id = ?',
+                        (gameId,)).fetchone()
+        
+        bet = 0
+        if gameToCheck['creator'] == session['user_id']:
+            bet = gameToCheck['owner_bet']
+        else:
+            gameToCheck = db.execute('SELECT * FROM joined WHERE game_id = ? AND player = ?',
+                        (gameId,session['user_id'])).fetchone()
+            bet = gameToCheck['bet']
+
+
+
+
+
+
+
         selected = []
 
         for game in games:
@@ -126,25 +148,31 @@ def game():
             matchid = game['match_id']
             away = data['teams']['away']['team']['name']
             home = data['teams']['home']['team']['name']
+            
 
-            selected.append({'game_id': gameId, 'match_id':matchid, 'away':away, 'home':home})
+            prediction = ""
+            if bet == 1:
+
+                prediction_binary = db.execute('SELECT prediction FROM bet WHERE match_id = ?',
+                                (matchid,)).fetchone()
+
+
+                print(prediction_binary)
+                if prediction_binary['prediction'] == 1:
+                    prediction = "1"
+                elif prediction_binary['prediction'] == 3:
+                    prediction = "X"
+                elif prediction_binary['prediction'] == 2:
+                    prediction = "2"
+
+            selected.append({'game_id': gameId, 'match_id':matchid, 'away':away, 'home':home, 'prediction':prediction})
 
         print(selected)
 
-
-        # Check if bet is already set
-
-        gameToCheck = db.execute('SELECT * FROM game WHERE game_id = ?',
-                        (gameId,)).fetchone()
-        
-        if gameToCheck['creator'] == session['user_id']:
-            bet = gameToCheck['owner_bet']
-        else:
-            gameToCheck = db.execute('SELECT * FROM joined WHERE game_id = ? AND player = ?',
-                        (gameId,session['user_id'])).fetchone()
-            bet = gameToCheck['bet']
-
         print(bet)
+
+
+
         return render_template('game.html', games=selected, bet=bet )
 
 
@@ -358,21 +386,26 @@ def set_predictions():
         db.commit()
     else:
         db.execute(
-                'UPDATE joined SET bet = ? WHERE game_id = ? AND player = ?)',
+                'UPDATE joined SET bet = ? WHERE game_id = ? AND player = ?',
                 (bet, gameId, user_id,)
             )
         db.commit()
     print('done2')
 
-    games = db.execute('SELECT * FROM match WHERE game_id = ?',
-                        (gameId,)).fetchall()
-    print('done3')
+
     
     
     selected = []
 
-    for game in games:
-        uri = 'https://statsapi.web.nhl.com/api/v1/game/' + game['match_id'] + '/boxscore'
+
+    for match in matches:
+
+
+        print(match)
+
+        
+        uri = 'https://statsapi.web.nhl.com/api/v1/game/' + match + '/boxscore'
+
 
         try:
             uResponse = requests.get(uri)
@@ -381,15 +414,29 @@ def set_predictions():
         Jresponse = uResponse.text
         data = json.loads(Jresponse)
 
-        matchid = game['match_id']
+        matchid = match
         away = data['teams']['away']['team']['name']
         home = data['teams']['home']['team']['name']
 
+        prediction = ""
+  
 
-        selected.append({'game_id': gameId, 'match_id':matchid, 'away':away, 'home':home})
+        if bet == 1:
+
+            prediction_binary = db.execute('SELECT prediction FROM bet WHERE match_id = ?',(match,)).fetchone()
+            print(prediction_binary['prediction'])
+            if prediction_binary['prediction'] == 1:
+                prediction = "1"
+            elif prediction_binary['prediction'] == 3:
+                prediction = "X"
+            elif prediction_binary['prediction'] == 2:
+                prediction = "2"
+
+
+        selected.append({'game_id': gameId, 'match_id':matchid, 'away':away, 'home':home, 'prediction':prediction})
         
 
-    print('done4')
+    print('done3')
     print(selected)
     print(bet)
     return render_template('game.html', games=selected, bet=bet)
