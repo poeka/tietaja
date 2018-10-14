@@ -4,7 +4,7 @@
 
     <h1>Game: {{games[0]['game_id']}}</h1>
     
-    <div id="left"><h2 style="margin-top: 40px;">Selected games:</h2></div><div id="right"><h2 style="margin-top: 40px;">Prediction</h2></div>
+    <div class="left"><h2 style="margin-top: 40px;">Selected games:</h2></div><div class="right"><h2 style="margin-top: 40px;">Result</h2></div><div class="right"><h2 style="margin-top: 40px;">Prediction</h2></div>
 
 
     {% if bet == 1 %}
@@ -12,7 +12,7 @@
     <div>
     {% for game in games %}
 
-        <div id="left" style="margin-top: 25px;">{{game['home']}} -  {{game['away']}}</div><div id="right" style="margin-top: 25px;">{{game['prediction']}}</div>
+        <div class="left" style="margin-top: 25px;">{{game['home']}} -  {{game['away']}}</div><div class="right" style="margin-top: 25px;">{{game['result']}}</div><div class="right" style="margin-top: 25px;">{{game['prediction']}}</div>
 
     {% endfor %}
     </div>

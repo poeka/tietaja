@@ -3,6 +3,7 @@ import requests
 import json
 
 
+
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify
 )
@@ -165,7 +166,28 @@ def game():
                 elif prediction_binary['prediction'] == 2:
                     prediction = "2"
 
-            selected.append({'game_id': gameId, 'match_id':matchid, 'away':away, 'home':home, 'prediction':prediction})
+
+                # Get results here
+
+                away_score = data['teams']['away']['teamStats']['teamSkaterStats']['goals']
+                home_score = data['teams']['home']['teamStats']['teamSkaterStats']['goals']
+
+                print(away_score)
+                print(home_score)
+                print(home_score > away_score)
+
+                # TODO: check ties
+                result = "Game not yet played"
+                if home_score > away_score:
+                    result = "1"
+                elif home_score == away_score and home_score != "":
+                    result = "X"
+                elif home_score < away_score:
+                    result = "2"
+
+                #TODO: save results to db match table in a smart way
+
+            selected.append({'game_id': gameId, 'match_id':matchid, 'away':away, 'home':home, 'prediction':prediction, 'result':result})
 
         print(selected)
 
