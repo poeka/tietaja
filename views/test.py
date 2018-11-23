@@ -38,7 +38,6 @@ def home():
 
     return render_template('home.html')
 
-
 @bp.route('/games', methods=('GET', 'POST'))
 @login_required
 def games():
@@ -54,13 +53,11 @@ def games():
 
     return render_template('games.html', userCreated=userCreated, userJoined=userJoined)
 
-
 @bp.route('/user_info', methods=('GET', 'POST'))
 @login_required
 def user_info():
 
     return render_template('user_info.html')
-
 
 @bp.route('/game', methods=('GET', 'POST'))
 @login_required
@@ -111,8 +108,6 @@ def game():
         games = db.execute('SELECT * FROM match WHERE game_id = ?',
                            (gameId,)).fetchall()
         
-        
-
 
         print("Get game details")
         # Check if bet is already set
@@ -127,12 +122,6 @@ def game():
             gameToCheck = db.execute('SELECT * FROM joined WHERE game_id = ? AND player = ?',
                         (gameId,session['user_id'])).fetchone()
             bet = gameToCheck['bet']
-
-
-
-
-
-
 
         selected = []
 
@@ -149,23 +138,24 @@ def game():
             matchid = game['match_id']
             away = data['teams']['away']['team']['name']
             home = data['teams']['home']['team']['name']
-            
-
+        
             prediction = ""
             if bet == 1:
-
-                prediction_binary = db.execute('SELECT prediction FROM bet WHERE match_id = ?',
-                                (matchid,)).fetchone()
-
+                print(gameId)
+                print(matchid)
+                print(user_id)
+                prediction_binary = db.execute('SELECT prediction FROM bet WHERE game_id = ? AND match_id = ? AND player = ?',
+                                (gameId, matchid, user_id,)).fetchone()
 
                 print(prediction_binary)
-                if prediction_binary['prediction'] == 1:
+                if prediction_binary['prediction'] == 0:
+                    prediction = "0"
+                elif prediction_binary['prediction'] == 1:
                     prediction = "1"
                 elif prediction_binary['prediction'] == 3:
                     prediction = "X"
                 elif prediction_binary['prediction'] == 2:
                     prediction = "2"
-
 
                 # Get results here
 
@@ -177,25 +167,30 @@ def game():
                 print(home_score > away_score)
 
                 # TODO: check ties
-                result = "Game not yet played"
-                if home_score > away_score:
-                    result = "1"
-                elif home_score == away_score and home_score != "":
-                    result = "X"
-                elif home_score < away_score:
-                    result = "2"
+
+                result = "Game not yet played" # Default
+
+                if home_score and away_score != "":
+                    if home_score > away_score:
+                        result = "1"
+                    elif home_score == away_score:
+                        result = "X"
+                    elif home_score < away_score:
+                        result = "2"
 
                 #TODO: save results to db match table in a smart way
 
-            selected.append({'game_id': gameId, 'match_id':matchid, 'away':away, 'home':home, 'prediction':prediction, 'result':result})
+                selected.append({'game_id': gameId, 'match_id':matchid, 'away':away, 'home':home, 'prediction':prediction, 'result':result})
+
+
+            else:
+                selected.append({'game_id': gameId, 'match_id':matchid, 'away':away, 'home':home})
 
         print(selected)
 
         print(bet)
 
-
-
-        return render_template('game.html', games=selected, bet=bet )
+        return render_template('game.html', games=selected)
 
 
 
@@ -367,30 +362,43 @@ def select_included_games():
 @login_required
 def set_predictions():
 
-    print(request.form)
-    print(request.form['game_id'])
-    print(request.form.getlist('match_id'))
+    try:
+        print(request.form)
+        print(request.form.getlist('match_id'))
+        print(request.form['game_id'])
 
-    #try:
-    gameId = request.form['game_id']
-    matches = request.form.getlist('match_id')
-    user_id = session['user_id']
+        gameId = request.form['game_id']
+        matches = request.form.getlist('match_id')
+        user_id = session['user_id']
+
+    except:
+        return redirect(url_for('.games'))
 
     db = get_db()
 
     for match in matches:
-        prediction = request.form[match]
-        print(gameId)
-        print(match)
-        print(user_id)
-        print(prediction)
-        db.execute(
+        try: 
+            prediction = request.form[match]
+        except:
+            prediction = 0 # 0 means that no prediction is set.
+
+        betPlaced = 0
+        betPlaced = db.execute('SELECT * FROM bet WHERE game_id = ? AND player = ? AND match_id = ?',
+                    (gameId, user_id, match,)).fetchone()
+
+        if betPlaced:
+                    db.execute(
+                'UPDATE bet SET prediction = ? WHERE game_id = ? AND player = ? AND match_id = ?',
+                (prediction, gameId, user_id, match,)
+            )
+
+        else:
+            db.execute(
                 'INSERT INTO bet (game_id, match_id, player, prediction) VALUES (?, ?, ?, ?)',
                 (gameId, match, user_id, prediction)
-            )    
-    db.commit()
+            )   
 
-    print('done1')
+    db.commit()
 
     bet = 1
 
@@ -412,19 +420,10 @@ def set_predictions():
                 (bet, gameId, user_id,)
             )
         db.commit()
-    print('done2')
-
-
-    
     
     selected = []
 
-
     for match in matches:
-
-
-        print(match)
-
         
         uri = 'https://statsapi.web.nhl.com/api/v1/game/' + match + '/boxscore'
 
@@ -445,9 +444,11 @@ def set_predictions():
 
         if bet == 1:
 
-            prediction_binary = db.execute('SELECT prediction FROM bet WHERE match_id = ?',(match,)).fetchone()
+            prediction_binary = db.execute('SELECT * FROM bet WHERE game_id = ? AND match_id = ? AND player = ?',(gameId, matchid, user_id,)).fetchone()
             print(prediction_binary['prediction'])
-            if prediction_binary['prediction'] == 1:
+            if prediction_binary['prediction'] == 0:
+                prediction = "0"
+            elif prediction_binary['prediction'] == 1:
                 prediction = "1"
             elif prediction_binary['prediction'] == 3:
                 prediction = "X"
@@ -455,13 +456,10 @@ def set_predictions():
                 prediction = "2"
 
 
+
         selected.append({'game_id': gameId, 'match_id':matchid, 'away':away, 'home':home, 'prediction':prediction})
         
-
-    print('done3')
-    print(selected)
-    print(bet)
-    return render_template('game.html', games=selected, bet=bet)
+    return render_template('game.html', games=selected)
 
 
     #except:
