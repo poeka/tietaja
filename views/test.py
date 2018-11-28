@@ -420,52 +420,10 @@ def set_predictions():
                 (bet, gameId, user_id,)
             )
         db.commit()
+
+    return redirect(url_for('.game', gameId=gameId))
     
-    selected = []
-
-    for match in matches:
-        
-        uri = 'https://statsapi.web.nhl.com/api/v1/game/' + match + '/boxscore'
-
-
-        try:
-            uResponse = requests.get(uri)
-        except requests.ConnectionError:
-            return "Connection Error"
-        Jresponse = uResponse.text
-        data = json.loads(Jresponse)
-
-        matchid = match
-        away = data['teams']['away']['team']['name']
-        home = data['teams']['home']['team']['name']
-
-        prediction = ""
-  
-
-        if bet == 1:
-
-            prediction_binary = db.execute('SELECT * FROM bet WHERE game_id = ? AND match_id = ? AND player = ?',(gameId, matchid, user_id,)).fetchone()
-            print(prediction_binary['prediction'])
-            if prediction_binary['prediction'] == 0:
-                prediction = "0"
-            elif prediction_binary['prediction'] == 1:
-                prediction = "1"
-            elif prediction_binary['prediction'] == 3:
-                prediction = "X"
-            elif prediction_binary['prediction'] == 2:
-                prediction = "2"
-
-
-
-        selected.append({'game_id': gameId, 'match_id':matchid, 'away':away, 'home':home, 'prediction':prediction})
-        
-    return render_template('game.html', games=selected)
-
-
-    #except:
-     #   print('error')
-
-      #  return redirect(url_for('.home'))
+   
 
 
 
