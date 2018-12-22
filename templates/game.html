@@ -19,7 +19,7 @@
             <fieldset>
                 <div style="margin-top: 25px;"> {{game['home']}} -
                     {{game['away']}}
-                    <div class="btn-group btn-group-toggle" data-toggle="buttons" style="float:right;margin-right: 50%;">
+                    <div class="btn-group btn-group-toggle" id="buttons" data-toggle="buttons" style="float:right;margin-right: 50%;">
                         {% if game['prediction'] == "1" %}
                         <label class="btn btn-secondary active">
                             <input type="radio" name="{{game['match_id']}}" id="option_1" value="1" checked=""> 1</label>
@@ -48,7 +48,9 @@
                             <input type="radio" name="{{game['match_id']}}" id="option_x" value="3"> X</label>
                         <label class="btn btn-secondary">
                             <input type="radio" name="{{game['match_id']}}" id="option_2" value="2"> 2 </label>
+
                         {% endif %}
+                        <a> Result: {{game['result']}} </a>
                     </div>
                 </div>
             </fieldset>
@@ -61,15 +63,48 @@
 
     </form>
 
+    <form action="{{url_for('.toggle_state')}}" method="post" style="margin-top: 25px;">
+        <input type="hidden" id="gameid" name="game_id" value="{{games[0]['game_id']}}">
+        <input type="hidden" name="lock_state" value="{{lock_state}}">
+
+        {% if owned == 1 %}
+
+        {% if lock_state == 1 %}
+
+        <div style="margin-top: 25px;">
+            <button type="submit" class="btn btn-secondary" id="unlock_button"> Unlock game</button>
+        </div>
+
+        {% elif lock_state == 0 %}
+
+        <div style="margin-top: 25px;">
+            <button type="submit" class="btn btn-secondary" id="lock_button"> Lock game</button>
+        </div>
+
+        {% endif %}
+
+        {% endif %}
+
+    </form>
 </div>
 
+</div>
+
+<div>
+    {% if finished == 1 %}
+    <h4>The game is finished, results can be calculated!!</h4>
+    {% endif %}
 </div>
 
 <script type="text/javascript">
 
-    $("#asave_button").click(function () {
-        window.alert("We should check if the predictions are set or not");
-    });
+    var lock_state = {{ lock_state }};
+
+    if (lock_state == 1) {
+        $('#save_button').prop('disabled', true);
+        $("input[type=radio]").prop('disabled', true);
+    }
+
 </script>
 
 {% endblock %}

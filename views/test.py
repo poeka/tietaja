@@ -15,7 +15,6 @@ from random import randint
 
 bp = Blueprint('test', __name__, template_folder='templates')
 
-
 def login_required(f):
 
     @functools.wraps(f)
@@ -74,8 +73,8 @@ def game():
 
             db = get_db()
             db.execute(
-                'INSERT INTO game (game_id, creator, owner_bet) VALUES (?, ?, ?)',
-                (gameid, user_id, 0)
+                'INSERT INTO game (game_id, creator, owner_bet, lock_state) VALUES (?, ?, ?, ?)',
+                (gameid, user_id, 0, 0)
             )
 
             for matchid in selected:
@@ -93,10 +92,16 @@ def game():
             return redirect(url_for('.home'))
 
     else:
+
+        browser = request.user_agent.browser
+        print(browser)
+
         user_id = session['user_id']
+
         try:
             gameId = request.args['gameId']
         except:
+            print('haloo1')
             return redirect(url_for('.games'))
 
         db = get_db()
@@ -114,16 +119,23 @@ def game():
 
         gameToCheck = db.execute('SELECT * FROM game WHERE game_id = ?',
                         (gameId,)).fetchone()
+
+        lock_state = gameToCheck['lock_state']
+        print('lock_state (game): '+str(lock_state))
         
         bet = 0
         if gameToCheck['creator'] == session['user_id']:
             bet = gameToCheck['owner_bet']
+            owned = 1
         else:
             gameToCheck = db.execute('SELECT * FROM joined WHERE game_id = ? AND player = ?',
                         (gameId,session['user_id'])).fetchone()
             bet = gameToCheck['bet']
+            owned = 0
 
         selected = []
+
+        game_finished = 1
 
         for game in games:
             uri = 'https://statsapi.web.nhl.com/api/v1/game/' + game['match_id'] + '/boxscore'
@@ -177,6 +189,9 @@ def game():
                         result = "X"
                     elif home_score < away_score:
                         result = "2"
+                        
+                if result == "Game not yet played":
+                    game_finished = 0
 
                 #TODO: save results to db match table in a smart way
 
@@ -190,8 +205,10 @@ def game():
 
         print(bet)
 
-        return render_template('game.html', games=selected)
+        if game_finished == 1: # Find out the winner
+            print('Game is finished!')
 
+        return render_template('game.html', games=selected, owned=owned, lock_state=lock_state, finished=game_finished)
 
 
 @bp.route('/login_page', methods=('GET', 'POST'))
@@ -345,6 +362,7 @@ def select_included_games():
         return "Connection Error"
     Jresponse = uResponse.text
     data = json.loads(Jresponse)
+    print(data)
 
     d = {}
 
@@ -422,8 +440,40 @@ def set_predictions():
         db.commit()
 
     return redirect(url_for('.game', gameId=gameId))
-    
    
+@bp.route('/toggle_state', methods=('GET', 'POST'))
+@login_required
+def toggle_state():
 
+    try:
+        print(request.form)
+        print(request.form['game_id'])
 
+        gameId = request.form['game_id']
+        lock_state = int(request.form['lock_state'])
 
+        print('haloo1')
+
+    except:
+        print('haloo2')
+        return redirect(url_for('.games'))
+
+    print('lock_state: ' + str(lock_state))
+
+    if lock_state == 0:
+        lock_state = 1
+    else:
+        lock_state = 0
+
+    db = get_db()
+
+    db.execute(
+            'UPDATE game SET lock_state = ? WHERE game_id = ? ',
+            (lock_state, gameId)
+        )
+    db.commit()
+
+    return redirect(url_for('.game', gameId=gameId))
+
+# Scheduled job could get the results to db?
+# https://statsapi.web.nhl.com/api/v1/game/2018020547/linescore
