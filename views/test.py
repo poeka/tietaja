@@ -3,7 +3,6 @@ import requests
 import json
 
 
-
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify
 )
@@ -14,6 +13,7 @@ from tietaja.database.db import get_db
 from random import randint
 
 bp = Blueprint('test', __name__, template_folder='templates')
+
 
 def login_required(f):
 
@@ -37,6 +37,7 @@ def home():
 
     return render_template('home.html')
 
+
 @bp.route('/games', methods=('GET', 'POST'))
 @login_required
 def games():
@@ -52,11 +53,13 @@ def games():
 
     return render_template('games.html', userCreated=userCreated, userJoined=userJoined)
 
+
 @bp.route('/user_info', methods=('GET', 'POST'))
 @login_required
 def user_info():
 
     return render_template('user_info.html')
+
 
 @bp.route('/game', methods=('GET', 'POST'))
 @login_required
@@ -77,11 +80,26 @@ def game():
                 (gameid, user_id, 0, 0)
             )
 
-            for matchid in selected:
+            for matchId in selected:
+
+                uri = 'https://statsapi.web.nhl.com/api/v1/game/' + \
+                    str(matchId) + '/linescore'
+
+                try:
+                    uResponse = requests.get(uri)
+                except requests.ConnectionError:
+                    return "Connection Error"
+                Jresponse = uResponse.text
+                gameInfo = json.loads(Jresponse)
+
+                away = gameInfo['teams']['away']['team']['name']
+                home = gameInfo['teams']['home']['team']['name']
+
                 db.execute(
-                    'INSERT INTO match (match_id, game_id) VALUES (?, ?)',
-                    (matchid, gameid)
+                    'INSERT INTO match (match_id, game_id, home_team, away_team, bettable, result, finished) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                    (matchId, gameid, home, away, 1, 0, 0,)
                 )
+
             db.commit()
             print('done')
             return redirect(url_for('.games'))
@@ -93,7 +111,7 @@ def game():
 
     else:
 
-        browser = request.user_agent.browser
+        browser = request.user_agent.browser  # just for testing
         print(browser)
 
         user_id = session['user_id']
@@ -112,52 +130,47 @@ def game():
 
         games = db.execute('SELECT * FROM match WHERE game_id = ?',
                            (gameId,)).fetchall()
-        
 
         print("Get game details")
+
         # Check if bet is already set
 
         gameToCheck = db.execute('SELECT * FROM game WHERE game_id = ?',
-                        (gameId,)).fetchone()
+                                 (gameId,)).fetchone()
 
-        lock_state = gameToCheck['lock_state']
+        lock_state = gameToCheck['lock_state']  # redundant, can be removed
         print('lock_state (game): '+str(lock_state))
-        
+
         bet = 0
         if gameToCheck['creator'] == session['user_id']:
             bet = gameToCheck['owner_bet']
             owned = 1
         else:
             gameToCheck = db.execute('SELECT * FROM joined WHERE game_id = ? AND player = ?',
-                        (gameId,session['user_id'])).fetchone()
+                                     (gameId, session['user_id'])).fetchone()
             bet = gameToCheck['bet']
             owned = 0
 
         selected = []
 
-        game_finished = 1
+        game_finished = 1  # This is used to find out if all matches in one game are finished
 
         for game in games:
-            uri = 'https://statsapi.web.nhl.com/api/v1/game/' + game['match_id'] + '/boxscore'
 
-            try:
-                uResponse = requests.get(uri)
-            except requests.ConnectionError:
-                return "Connection Error"
-            Jresponse = uResponse.text
-            data = json.loads(Jresponse)
+            result = game['result']
 
-            matchid = game['match_id']
-            away = data['teams']['away']['team']['name']
-            home = data['teams']['home']['team']['name']
-        
+            if result == "0":
+                result = "Game not yet started"
+                game_finished = 0
+
+                if game['bettable'] == 0 and game['finished'] == 0:
+                    result = "Game is ongoing"
+
             prediction = ""
             if bet == 1:
-                print(gameId)
-                print(matchid)
-                print(user_id)
+
                 prediction_binary = db.execute('SELECT prediction FROM bet WHERE game_id = ? AND match_id = ? AND player = ?',
-                                (gameId, matchid, user_id,)).fetchone()
+                                               (gameId, game['match_id'], user_id,)).fetchone()
 
                 print(prediction_binary)
                 if prediction_binary['prediction'] == 0:
@@ -169,46 +182,96 @@ def game():
                 elif prediction_binary['prediction'] == 2:
                     prediction = "2"
 
-                # Get results here
+                # TODO: save results to db match table in a smart way
 
-                away_score = data['teams']['away']['teamStats']['teamSkaterStats']['goals']
-                home_score = data['teams']['home']['teamStats']['teamSkaterStats']['goals']
-
-                print(away_score)
-                print(home_score)
-                print(home_score > away_score)
-
-                # TODO: check ties
-
-                result = "Game not yet played" # Default
-
-                if home_score and away_score != "":
-                    if home_score > away_score:
-                        result = "1"
-                    elif home_score == away_score:
-                        result = "X"
-                    elif home_score < away_score:
-                        result = "2"
-                        
-                if result == "Game not yet played":
-                    game_finished = 0
-
-                #TODO: save results to db match table in a smart way
-
-                selected.append({'game_id': gameId, 'match_id':matchid, 'away':away, 'home':home, 'prediction':prediction, 'result':result})
-
+                selected.append({'game_id': gameId, 'match_id': game['match_id'], 'away': game['away_team'],
+                                 'home': game['home_team'], 'prediction': prediction, 'result': result, 'bettable': str(game['bettable'])})
 
             else:
-                selected.append({'game_id': gameId, 'match_id':matchid, 'away':away, 'home':home})
+                selected.append(
+                    {'game_id': gameId, 'match_id': game['match_id'], 'away': game['away_team'], 'home': game['home_team'], 'result': result, 'bettable': str(game['bettable'])})
 
-        print(selected)
+        # Get players and results
 
-        print(bet)
+        players = db.execute('SELECT * FROM joined WHERE game_id = ?',
+                             (gameId,)).fetchall()
 
-        if game_finished == 1: # Find out the winner
-            print('Game is finished!')
+        number_of_matches = len(db.execute('SELECT * FROM match WHERE game_id = ?',
+                                           (gameId,)).fetchall())
 
-        return render_template('game.html', games=selected, owned=owned, lock_state=lock_state, finished=game_finished)
+        joined_users = {}
+
+        creator = db.execute('SELECT * FROM game WHERE game_id = ?',
+                             (gameId,)).fetchone()['creator']
+
+        owner = db.execute('SELECT * FROM user WHERE id = ?',
+                           (creator,)).fetchone()['username']  # The game owner
+
+        bets = db.execute('SELECT * FROM bet WHERE game_id = ? AND player = ?',
+                          (gameId, user_id,)).fetchall()
+
+        bet_results = 0
+        match_result = 0
+
+        for bet in bets:
+
+            try:
+                match_result = db.execute('SELECT * FROM match WHERE match_id = ?',
+                                          (bet['match_id'])).fetchone()['result']
+
+            except:
+                continue
+
+            if match_result == "0" or bet[prediction == 0]:
+                continue
+
+            elif match_result == "1" and bet['prediction'] == 1:
+                bet_results += 1
+
+            elif match_result == "2" and bet['prediction'] == 2:
+                bet_results += 1
+
+            elif match_result == "X" and bet['prediction'] == 3:
+                bet_results += 1
+
+        joined_users[owner] = str(bet_results) + '/' + str(number_of_matches)
+
+        for player in players:
+
+            user = db.execute('SELECT * FROM user WHERE id = ?',
+                              (int(player['player']),)).fetchone()['username']
+
+            bets = db.execute('SELECT * FROM bet WHERE game_id = ? AND player = ?',
+                              (gameId, int(player['player']),)).fetchall()
+
+            bet_results = 0
+            match_result = 0
+
+            for bet in bets:
+
+                try:
+                    match_result = db.execute('SELECT * FROM match WHERE match_id= ?',
+                                              (bet['match_id'])).fetchone()['result']
+
+                except:
+                    continue
+
+                if match_result == "0" or bet[prediction == 0]:
+                    continue
+
+                elif match_result == "1" and bet['prediction'] == 1:
+                    bet_results += 1
+
+                elif match_result == "2" and bet['prediction'] == 2:
+                    bet_results += 1
+
+                elif match_result == "X" and bet['prediction'] == 3:
+                    bet_results += 1
+
+            joined_users[user] = str(bet_results) + \
+                '/' + str(number_of_matches)
+
+        return render_template('game.html', games=selected, owned=owned, finished=game_finished, players=joined_users)
 
 
 @bp.route('/login_page', methods=('GET', 'POST'))
@@ -362,19 +425,23 @@ def select_included_games():
         return "Connection Error"
     Jresponse = uResponse.text
     data = json.loads(Jresponse)
-    print(data)
 
     d = {}
 
-    print(data['totalGames'])
     for date in data['dates']:
         for game in date['games']:
             gameId = game['gamePk']
+
+            # Check that the game is not yet started/finished
+            if game['status']['detailedState'] != 'Scheduled':
+                continue
+
             away = game['teams']['away']['team']['name']
             home = game['teams']['home']['team']['name']
-            d[gameId] = home + ' - ' + away
+            d[gameId] = [home, away]
 
     return render_template('/select_included_games.html', startDate=start_date, endDate=end_date, d=d)
+
 
 @bp.route('/set_predictions',  methods=('GET', 'POST'))
 @login_required
@@ -395,17 +462,24 @@ def set_predictions():
     db = get_db()
 
     for match in matches:
-        try: 
+        try:
             prediction = request.form[match]
         except:
-            prediction = 0 # 0 means that no prediction is set.
+            prediction = 0  # 0 means that no prediction is set.
 
         betPlaced = 0
         betPlaced = db.execute('SELECT * FROM bet WHERE game_id = ? AND player = ? AND match_id = ?',
-                    (gameId, user_id, match,)).fetchone()
+                               (gameId, user_id, match,)).fetchone()
 
         if betPlaced:
-                    db.execute(
+
+            checkBettable = db.execute('SELECT * FROM match WHERE match_id = ?',
+                                       (match,)).fetchone()
+
+            if not checkBettable['bettable']:
+                continue
+
+            db.execute(
                 'UPDATE bet SET prediction = ? WHERE game_id = ? AND player = ? AND match_id = ?',
                 (prediction, gameId, user_id, match,)
             )
@@ -414,33 +488,34 @@ def set_predictions():
             db.execute(
                 'INSERT INTO bet (game_id, match_id, player, prediction) VALUES (?, ?, ?, ?)',
                 (gameId, match, user_id, prediction)
-            )   
+            )
 
     db.commit()
 
     bet = 1
 
-        # Check if game is owned
+    # Check if game is owned
 
     gameToCheck = db.execute('SELECT * FROM game WHERE game_id = ?',
-                    (gameId,)).fetchone()
-    
+                             (gameId,)).fetchone()
+
     if gameToCheck['creator'] == user_id:
         print(user_id)
         db.execute(
-                'UPDATE game SET owner_bet = ? WHERE game_id = ? ',
-                (1, gameId)
-            )
+            'UPDATE game SET owner_bet = ? WHERE game_id = ? ',
+            (1, gameId)
+        )
         db.commit()
     else:
         db.execute(
-                'UPDATE joined SET bet = ? WHERE game_id = ? AND player = ?',
-                (bet, gameId, user_id,)
-            )
+            'UPDATE joined SET bet = ? WHERE game_id = ? AND player = ?',
+            (bet, gameId, user_id,)
+        )
         db.commit()
 
     return redirect(url_for('.game', gameId=gameId))
-   
+
+
 @bp.route('/toggle_state', methods=('GET', 'POST'))
 @login_required
 def toggle_state():
@@ -452,10 +527,7 @@ def toggle_state():
         gameId = request.form['game_id']
         lock_state = int(request.form['lock_state'])
 
-        print('haloo1')
-
     except:
-        print('haloo2')
         return redirect(url_for('.games'))
 
     print('lock_state: ' + str(lock_state))
@@ -468,12 +540,9 @@ def toggle_state():
     db = get_db()
 
     db.execute(
-            'UPDATE game SET lock_state = ? WHERE game_id = ? ',
-            (lock_state, gameId)
-        )
+        'UPDATE game SET lock_state = ? WHERE game_id = ? ',
+        (lock_state, gameId)
+    )
     db.commit()
 
     return redirect(url_for('.game', gameId=gameId))
-
-# Scheduled job could get the results to db?
-# https://statsapi.web.nhl.com/api/v1/game/2018020547/linescore

@@ -6,21 +6,30 @@
 
         <h1>Game: {{games[0]['game_id']}}</h1>
 
+        <h3>Joined players:</h3>
+
+        {% for key, value in players.items() %} {% if finished == 1 %}
+
+        <h6>{{ key }} : {{ value }}</h6>
+
+        {% else %}
+
+        <h6>{{ key }}</h6>
+
+        {% endif %} {% endfor %}
+
     </div>
 
     <form action="{{url_for('.set_predictions')}}" method="post" style="margin-top: 25px;">
-        <input type="hidden" id="gameid" name="game_id" value="{{games[0]['game_id']}}">
-
-        {% for game in games %}
+        <input type="hidden" id="gameid" name="game_id" value="{{games[0]['game_id']}}"> {% for game in games %}
 
         <div>
 
             <input type="hidden" id="matchid" name="match_id" value="{{game['match_id']}}">
             <fieldset>
-                <div style="margin-top: 25px;"> {{game['home']}} -
-                    {{game['away']}}
+                <div style="margin-top: 25px;"> {{game['home']}} - {{game['away'] }}
                     <div class="btn-group btn-group-toggle" id="buttons" data-toggle="buttons" style="float:right;margin-right: 50%;">
-                        {% if game['prediction'] == "1" %}
+                        {% if game['bettable'] == "1" %} {% if game['prediction'] == "1" %}
                         <label class="btn btn-secondary active">
                             <input type="radio" name="{{game['match_id']}}" id="option_1" value="1" checked=""> 1</label>
                         <label class="btn btn-secondary">
@@ -48,8 +57,36 @@
                             <input type="radio" name="{{game['match_id']}}" id="option_x" value="3"> X</label>
                         <label class="btn btn-secondary">
                             <input type="radio" name="{{game['match_id']}}" id="option_2" value="2"> 2 </label>
+                        {% endif %} {% else %} {% if game['prediction'] == "1" %}
+                        <label class="btn btn-secondary active">
+                            <input type="radio" name="{{game['match_id']}}" id="option_1" value="1" checked=""> 1</label>
+                        <label class="btn btn-secondary disabled">
+                            <input type="radio" name="{{game['match_id']}}" id="option_x" value="3"> X</label>
+                        <label class="btn btn-secondary disabled">
+                            <input type="radio" name="{{game['match_id']}}" id="option_2" value="2"> 2 </label>
+                        {% elif game['prediction'] == "X" %}
+                        <label class="btn btn-secondary disabled">
+                            <input type="radio" name="{{game['match_id']}}" id="option_1" value="1"> 1</label>
+                        <label class="btn btn-secondary active">
+                            <input type="radio" name="{{game['match_id']}}" id="option_x" value="3" checked> X</label>
+                        <label class="btn btn-secondary disabled">
+                            <input type="radio" name="{{game['match_id']}}" id="option_2" value="2"> 2 </label>
+                        {% elif game['prediction'] == "2" %}
+                        <label class="btn btn-secondary disabled">
+                            <input type="radio" name="{{game['match_id']}}" id="option_1" value="1"> 1</label>
+                        <label class="btn btn-secondarydisabled">
+                            <input type="radio" name="{{game['match_id']}}" id="option_x" value="3"> X</label>
+                        <label class="btn btn-secondary active">
+                            <input type="radio" name="{{game['match_id']}}" id="option_2" value="2" checked> 2 </label>
+                        {% else %}
+                        <label class="btn btn-secondary disabled">
+                            <input type="radio" name="{{game['match_id']}}" id="option_1" value="1"> 1</label>
+                        <label class="btn btn-secondary disabled">
+                            <input type="radio" name="{{game['match_id']}}" id="option_x" value="3"> X</label>
+                        <label class="btn btn-secondary disabled">
+                            <input type="radio" name="{{game['match_id']}}" id="option_2" value="2"> 2 </label>
+                        {% endif %} {% endif %}
 
-                        {% endif %}
                         <a> Result: {{game['result']}} </a>
                     </div>
                 </div>
@@ -65,28 +102,14 @@
 
     <form action="{{url_for('.toggle_state')}}" method="post" style="margin-top: 25px;">
         <input type="hidden" id="gameid" name="game_id" value="{{games[0]['game_id']}}">
-        <input type="hidden" name="lock_state" value="{{lock_state}}">
+        <input type="hidden" name="lock_state" value="{{lock_state}}"> {% if owned == 1 %}
 
-        {% if owned == 1 %}
-
-        {% if lock_state == 1 %}
-
-        <div style="margin-top: 25px;">
-            <button type="submit" class="btn btn-secondary" id="unlock_button"> Unlock game</button>
-        </div>
-
-        {% elif lock_state == 0 %}
-
-        <div style="margin-top: 25px;">
-            <button type="submit" class="btn btn-secondary" id="lock_button"> Lock game</button>
-        </div>
-
-        {% endif %}
+        <h4>Should the game owner have some options here? To delete game etc.</h4>
 
         {% endif %}
 
     </form>
-</div>
+    </div>
 
 </div>
 
@@ -98,13 +121,8 @@
 
 <script type="text/javascript">
 
-    var lock_state = {{ lock_state }};
-
-    if (lock_state == 1) {
+    if ({{ finished }} == 1) {
         $('#save_button').prop('disabled', true);
-        $("input[type=radio]").prop('disabled', true);
     }
 
-</script>
-
-{% endblock %}
+</script> {% endblock %}

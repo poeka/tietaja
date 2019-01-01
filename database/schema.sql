@@ -8,7 +8,7 @@ DROP TABLE IF EXISTS bet;
 CREATE TABLE user
 (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  username TEXT UNIQUE NOT NULL UNIQUE,
+  username TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL
 );
 
@@ -31,12 +31,17 @@ CREATE TABLE joined
 
 CREATE TABLE match
 (
-  id INTEGER PRIMARY KEY,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
   match_id TEXT NOT NULL,
   game_id INTEGER NOT NULL,
+  home_team TEXT,
+  away_team TEXT,
+  result TEXT,
   home FLOAT,
   tie FLOAT,
-  away FLOAT
+  away FLOAT,
+  bettable BOOLEAN NOT NULL,
+  finished BOOLEAN NOT NULL
 );
 
 CREATE TABLE bet

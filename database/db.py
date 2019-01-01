@@ -1,7 +1,8 @@
 import sqlite3
+import os
 
 import click
-from flask import current_app, g
+from flask import current_app, g, Flask
 from flask.cli import with_appcontext
 
 
@@ -27,8 +28,11 @@ def init_db_command():
 
 def get_db():
     if 'db' not in g:
+
+        app = Flask(__name__)
+
         g.db = sqlite3.connect(
-            current_app.config['DATABASE'],
+            os.path.join(app.instance_path, 'flaskr.sqlite'),
             detect_types=sqlite3.PARSE_DECLTYPES
         )
         g.db.row_factory = sqlite3.Row

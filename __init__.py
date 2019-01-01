@@ -2,6 +2,12 @@ import os
 
 from flask import (Flask, g)
 from flask_bootstrap import Bootstrap
+from .database import db
+from .views import test
+from .tasks import task
+#from apscheduler.schedulers.background import BackgroundScheduler
+from tietaja.database.db import get_db
+from flask_apscheduler import APScheduler
 
 
 def create_app(test_config=None):
@@ -14,7 +20,7 @@ def create_app(test_config=None):
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
     )
-    from .database import db
+
     db.init_app(app)
 
     if test_config is None:
@@ -30,7 +36,13 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    from .views import test
     app.register_blueprint(test.bp)
+    app.register_blueprint(task.bp)
+
+    #scheduler = BackgroundScheduler()
+    # scheduler.start()
+    #scheduler.add_job(task.checkResults(), 'interval', seconds=10)
+
+    #scheduler.add_job(task.checkResults, 'interval', seconds=10)
 
     return app

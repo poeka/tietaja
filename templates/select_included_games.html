@@ -15,15 +15,13 @@
             <div class="mb-2">
                 <b>There are no matches between the date range!</b>
             </div>
-            {% endif %}
-
-            {% for key, value in d.items() %}
+            {% endif %} {% for key, value in d.items() %}
             <b>
                 <tr>
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" name="selected" value="{{ key }}" id="{{ key }}">
                         <label class="form-check-label" for="{{ key }}">
-                            {{ value }}
+                            {{ value[0] }} - {{ value[1] }}
                         </label>
                     </div>
                 </tr>
