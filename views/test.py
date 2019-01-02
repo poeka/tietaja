@@ -208,7 +208,7 @@ def game():
                            (creator,)).fetchone()['username']  # The game owner
 
         bets = db.execute('SELECT * FROM bet WHERE game_id = ? AND player = ?',
-                          (gameId, user_id,)).fetchall()
+                          (gameId, creator,)).fetchall()
 
         bet_results = 0
         match_result = 0
@@ -217,18 +217,18 @@ def game():
 
             try:
                 match_result = db.execute('SELECT * FROM match WHERE match_id = ?',
-                                          (bet['match_id'])).fetchone()['result']
+                                          (str(bet['match_id']),)).fetchone()['result']
 
             except:
                 continue
 
-            if match_result == "0" or bet[prediction == 0]:
+            if str(match_result) == "0" or int(bet['prediction']) == 0:
                 continue
 
-            elif match_result == "1" and bet['prediction'] == 1:
+            elif str(match_result) == "1" and int(bet['prediction']) == 1:
                 bet_results += 1
 
-            elif match_result == "2" and bet['prediction'] == 2:
+            elif str(match_result) == "2" and int(bet['prediction']) == 2:
                 bet_results += 1
 
             elif match_result == "X" and bet['prediction'] == 3:
@@ -251,21 +251,21 @@ def game():
 
                 try:
                     match_result = db.execute('SELECT * FROM match WHERE match_id= ?',
-                                              (bet['match_id'])).fetchone()['result']
+                                              (str(bet['match_id']),)).fetchone()['result']
 
                 except:
                     continue
 
-                if match_result == "0" or bet[prediction == 0]:
+                if str(match_result) == "0" or int(bet['prediction']) == 0:
                     continue
 
-                elif match_result == "1" and bet['prediction'] == 1:
+                elif str(match_result) == "1" and int(bet['prediction']) == 1:
                     bet_results += 1
 
-                elif match_result == "2" and bet['prediction'] == 2:
+                elif str(match_result) == "2" and int(bet['prediction']) == 2:
                     bet_results += 1
 
-                elif match_result == "X" and bet['prediction'] == 3:
+                elif str(match_result) == "X" and int(bet['prediction']) == 3:
                     bet_results += 1
 
             joined_users[user] = str(bet_results) + \
