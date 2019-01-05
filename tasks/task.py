@@ -51,14 +51,14 @@ def getResults():
 
             print('currentperiod: ' + str(gameInfo['currentPeriod']))
 
-            if int(gameInfo['currentPeriod']) == 3 or int(gameInfo['currentPeriod']) == 4:
+            if int(gameInfo['currentPeriod']) == 3 or int(gameInfo['currentPeriod']) == 4 or int(gameInfo['currentPeriod']) == 5:
 
                 if gameInfo['currentPeriodTimeRemaining'] == "Final":
 
                     away_score = gameInfo['teams']['away']['goals']
                     home_score = gameInfo['teams']['home']['goals']
 
-                    if int(gameInfo['currentPeriod']) == 4:
+                    if int(gameInfo['currentPeriod']) == 4 or int(gameInfo['currentPeriod']) == 5:
                         result = "X"
                     elif home_score > away_score:
                         result = "1"
